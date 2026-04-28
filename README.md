@@ -26,6 +26,8 @@ A production-ready Library Management System built with **FastAPI**, designed to
 - **Password Hashing:** Passlib (bcrypt)  
 
 ## SCREENSHOTS
+<img width="1366" height="768" alt="Screenshot (21)" src="https://github.com/user-attachments/assets/b72aad6a-e2df-44c9-9b2c-b064411f575e" />
+
 <img width="1366" height="768" alt="Screenshot (19)" src="https://github.com/user-attachments/assets/8addc20d-b151-4435-a9a1-ed5eab6e9421" />
 <img width="1366" height="768" alt="Screenshot (20)" src="https://github.com/user-attachments/assets/49315634-7dfb-4e60-bb08-b08f484f2fe5" />
 <img width="1366" height="768" alt="Screenshot (18)" src="https://github.com/user-attachments/assets/88ff3a3a-c8c5-48eb-8b63-72561ae19f43" />
