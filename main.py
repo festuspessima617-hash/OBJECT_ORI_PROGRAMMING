@@ -12,25 +12,19 @@ from jose import jwt, JWTError
 from passlib.context import CryptContext
 import os
 
-# ==============================
-# 🚀 APP INIT
-# ==============================
 
-app = FastAPI(title="Production Library API")
 
-# ==============================
-# 🔐 SECURITY
-# ==============================
+app = FastAPI(title="LIMKOKWING Library API")
 
-SECRET_KEY = os.getenv("SECRET_KEY", "change_this_key")
+
+
+SECRET_KEY = os.getenv("SECRET_KEY", "Festus")
 ALGORITHM = "HS256"
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
-# ==============================
-# 🗄 DATABASE
-# ==============================
+
 
 DATABASE_URL = "sqlite:///./library.db"
 
@@ -42,9 +36,6 @@ engine = create_engine(
 SessionLocal = sessionmaker(bind=engine, autoflush=False, autocommit=False)
 Base = declarative_base()
 
-# ==============================
-# 📦 MODELS
-# ==============================
 
 class User(Base):
     __tablename__ = "users"
@@ -71,17 +62,13 @@ class Borrow(Base):
     book_id = Column(Integer)
     due_date = Column(DateTime)
 
-# ==============================
-# ⚠ SAFE DB INIT (IMPORTANT)
-# ==============================
+
 
 @app.on_event("startup")
 def startup():
     Base.metadata.create_all(bind=engine)
 
-# ==============================
-# 🔌 DB SESSION
-# ==============================
+
 
 def get_db():
     db = SessionLocal()
@@ -90,9 +77,7 @@ def get_db():
     finally:
         db.close()
 
-# ==============================
-# 🔐 AUTH FUNCTIONS
-# ==============================
+
 
 def hash_password(password: str):
     return pwd_context.hash(password)
@@ -114,9 +99,7 @@ def require_admin(user=Depends(get_current_user)):
         raise HTTPException(status_code=403, detail="Admin only")
     return user
 
-# ==============================
-# 📌 SCHEMAS
-# ==============================
+
 
 class UserCreate(BaseModel):
     name: str
@@ -132,9 +115,7 @@ class BorrowRequest(BaseModel):
     user_id: int
     book_id: int
 
-# ==============================
-# 👤 USER ROUTES
-# ==============================
+
 
 @app.post("/users")
 def create_user(user: UserCreate, db: Session = Depends(get_db)):
@@ -162,9 +143,7 @@ def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depend
 
     return {"access_token": token, "token_type": "bearer"}
 
-# ==============================
-# 🛡 ADMIN ONLY
-# ==============================
+
 
 @app.get("/users")
 def get_users(user=Depends(require_admin), db: Session = Depends(get_db)):
@@ -178,17 +157,13 @@ def create_book(book: BookCreate, user=Depends(require_admin), db: Session = Dep
     db.refresh(new_book)
     return new_book
 
-# ==============================
-# 📚 BOOKS
-# ==============================
+
 
 @app.get("/books")
 def get_books(user=Depends(get_current_user), db: Session = Depends(get_db)):
     return db.query(Book).all()
 
-# ==============================
-# 📥 BORROW
-# ==============================
+
 
 @app.post("/borrow")
 def borrow_book(req: BorrowRequest, user=Depends(get_current_user), db: Session = Depends(get_db)):
@@ -214,9 +189,7 @@ def borrow_book(req: BorrowRequest, user=Depends(get_current_user), db: Session 
 
     return {"message": "Book borrowed successfully"}
 
-# ==============================
-# 📤 RETURN
-# ==============================
+
 
 @app.post("/return")
 def return_book(req: BorrowRequest, user=Depends(get_current_user), db: Session = Depends(get_db)):
