@@ -1,6 +1,6 @@
-# ==============================
-# 📚 PRODUCTION LIBRARY API (FIXED)
-# ==============================
+
+# 📚 LIMKOKWING LIBRARY 
+
 
 from fastapi import FastAPI, HTTPException, Depends
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
@@ -13,9 +13,7 @@ from passlib.context import CryptContext
 import os
 
 
-# ==============================
-# APP CONFIG
-# ==============================
+
 app = FastAPI(title="LIMKOKWING Library API")
 
 SECRET_KEY = os.getenv("SECRET_KEY", "Festus")
@@ -26,9 +24,7 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 
-# ==============================
-# DATABASE
-# ==============================
+
 DATABASE_URL = "sqlite:///./library.db"
 
 engine = create_engine(
@@ -40,9 +36,7 @@ SessionLocal = sessionmaker(bind=engine, autoflush=False, autocommit=False)
 Base = declarative_base()
 
 
-# ==============================
-# MODELS
-# ==============================
+
 class User(Base):
     __tablename__ = "users"
 
@@ -71,17 +65,13 @@ class Borrow(Base):
     due_date = Column(DateTime)
 
 
-# ==============================
-# STARTUP
-# ==============================
+
 @app.on_event("startup")
 def startup():
     Base.metadata.create_all(bind=engine)
 
 
-# ==============================
-# DB DEPENDENCY
-# ==============================
+
 def get_db():
     db = SessionLocal()
     try:
@@ -90,9 +80,7 @@ def get_db():
         db.close()
 
 
-# ==============================
-# AUTH FUNCTIONS
-# ==============================
+
 def hash_password(password: str):
     return pwd_context.hash(password)
 
@@ -136,9 +124,7 @@ def require_admin(user: User = Depends(get_current_user)):
     return user
 
 
-# ==============================
-# SCHEMAS
-# ==============================
+
 class UserCreate(BaseModel):
     name: str
     password: str
@@ -155,17 +141,13 @@ class BorrowRequest(BaseModel):
     book_id: int
 
 
-# ==============================
-# ROUTES
-# ==============================
 
-# Root route (fix 404)
 @app.get("/")
 def home():
     return {"message": "Library API is running 🚀"}
 
 
-# Create user
+
 @app.post("/users")
 def create_user(user: UserCreate, db: Session = Depends(get_db)):
     existing = db.query(User).filter(User.name == user.name).first()
@@ -184,7 +166,7 @@ def create_user(user: UserCreate, db: Session = Depends(get_db)):
     return {"message": "User created successfully"}
 
 
-# Login
+
 @app.post("/login")
 def login(
     form_data: OAuth2PasswordRequestForm = Depends(),
@@ -203,13 +185,13 @@ def login(
     return {"access_token": token, "token_type": "bearer"}
 
 
-# Get users (admin only)
+
 @app.get("/users")
 def get_users(user: User = Depends(require_admin), db: Session = Depends(get_db)):
     return db.query(User).all()
 
 
-# Create book (admin only)
+
 @app.post("/books")
 def create_book(
     book: BookCreate,
@@ -224,13 +206,12 @@ def create_book(
     return new_book
 
 
-# Get books (any logged in user)
 @app.get("/books")
 def get_books(user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     return db.query(Book).all()
 
 
-# Borrow book (secure)
+
 @app.post("/borrow")
 def borrow_book(
     req: BorrowRequest,
@@ -259,7 +240,7 @@ def borrow_book(
     return {"message": "Book borrowed successfully"}
 
 
-# Return book
+
 @app.post("/return")
 def return_book(
     req: BorrowRequest,
