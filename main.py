@@ -1,7 +1,4 @@
 
-# 📚 LIMKOKWING LIBRARY 
-
-
 from fastapi import FastAPI, HTTPException, Depends
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from sqlalchemy import create_engine, Column, Integer, String, Boolean, DateTime
@@ -69,6 +66,7 @@ class Borrow(Base):
 @app.on_event("startup")
 def startup():
     Base.metadata.create_all(bind=engine)
+
 
 
 
@@ -142,6 +140,8 @@ class BorrowRequest(BaseModel):
 
 
 
+
+# Root
 @app.get("/")
 def home():
     return {"message": "Library API is running 🚀"}
@@ -166,7 +166,6 @@ def create_user(user: UserCreate, db: Session = Depends(get_db)):
     return {"message": "User created successfully"}
 
 
-
 @app.post("/login")
 def login(
     form_data: OAuth2PasswordRequestForm = Depends(),
@@ -182,8 +181,17 @@ def login(
         "role": user.role
     })
 
-    return {"access_token": token, "token_type": "bearer"}
+    return {
+        "access_token": token,
+        "token_type": "bearer",
+        "expires_in": ACCESS_TOKEN_EXPIRE_MINUTES * 60
+    }
 
+
+
+@app.get("/me")
+def get_me(current_user: User = Depends(get_current_user)):
+    return current_user
 
 
 @app.get("/users")
@@ -209,6 +217,11 @@ def create_book(
 @app.get("/books")
 def get_books(user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     return db.query(Book).all()
+
+
+@app.get("/books/search")
+def search_books(query: str, db: Session = Depends(get_db)):
+    return db.query(Book).filter(Book.title.contains(query)).all()
 
 
 
@@ -240,6 +253,10 @@ def borrow_book(
     return {"message": "Book borrowed successfully"}
 
 
+@app.get("/my-books")
+def my_books(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    return db.query(Borrow).filter(Borrow.user_id == current_user.id).all()
+
 
 @app.post("/return")
 def return_book(
@@ -265,3 +282,13 @@ def return_book(
     db.commit()
 
     return {"message": "Book returned", "fine": fine}
+
+
+
+@app.get("/admin/stats")
+def stats(user: User = Depends(require_admin), db: Session = Depends(get_db)):
+    return {
+        "users": db.query(User).count(),
+        "books": db.query(Book).count(),
+        "borrowed": db.query(Borrow).count()
+    }
